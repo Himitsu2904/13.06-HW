@@ -11,6 +11,8 @@ class matrix
 public:
 	matrix();
 	matrix(int i, int j);
+	matrix(const matrix& obj);
+	matrix(matrix&& obj);
 	int Get_i_size()
 	{
 		return i_size;
@@ -36,7 +38,7 @@ public:
 	void show();
 	T max();
 	T min();
-	matrix<T>& operator +(int a);
+	matrix<T> operator +(int a);
 	matrix<T>& operator +=(int a);
 	matrix<T> operator -(int a);
 	matrix<T>& operator -=(int a);
@@ -44,15 +46,8 @@ public:
 	matrix<T>& operator *=(int a);
 	matrix<T> operator /(int a);
 	matrix<T>& operator /=(int a);
-	matrix<T>& operator =(matrix<T>& obj);
-	T operator[](int i)
-	{
-		return matr[i];
-	};
-	/*T operator[][](int i, int j)
-	{
-		return matr[i][j];
-	};*/
+	//matrix<T>& operator =(matrix<T> obj);
+	matrix<T>& operator =(matrix<T> && obj);
 	~matrix();
 };
 
@@ -99,6 +94,45 @@ matrix<T>::matrix(int i, int j)
 }
 
 template<typename T>
+matrix<T>::matrix(const matrix& obj)
+{
+	i_size = obj.i_size;
+	j_size = obj.j_size;
+	if (matr != nullptr)
+	{
+		for (int i = 0; i < i_size; i++)
+		{
+			if (matr[i] != nullptr)
+			{
+				delete[] matr[i];
+			}
+		}
+		delete[] matr;
+	}
+	matr = new T * [i_size];
+	for (int i = 0; i < i_size; i++)
+	{
+		matr[i] = new T[j_size];
+	}
+	for (int i = 0; i < i_size; i++)
+	{
+		for (int j = 0; j < j_size; j++)
+		{
+			matr[i][j] = obj.matr[i][j];
+		}
+	}
+}
+
+template<typename T>
+matrix<T>::matrix(matrix&& obj)
+{
+	i_size = obj.i_size;
+	j_size = obj.j_size;
+	matr = obj.matr;
+	obj.matr = nullptr;
+}
+
+template<typename T>
 void matrix<T>::Set_size(int i, int j)
 {
 	i_size = i;
@@ -125,6 +159,11 @@ void matrix<T>::input()
 template<typename T>
 void matrix<T>::show()
 {
+	if (matr == nullptr)
+	{
+		cout << "Matrix isn't filled." << endl;
+		return;
+	}
 	cout << "Matrix:" << endl;
 	for (int i = 0; i < i_size; i++)
 	{
@@ -171,17 +210,14 @@ T matrix<T>::min()
 }
 
 template<typename T>
-matrix<T>& matrix<T>::operator+(int a)
+matrix<T> matrix<T>::operator+(int a)
 {
-	matrix<T> _matr;
-	_matr = new T * [i_size];
+	matrix<T> _matr(i_size,j_size);
 	for (int i = 0; i < i_size; i++)
 	{
-		_matr[i] = new T[j_size];
 		for (int j = 0; j < j_size; j++)
 		{
-			//_matr[i][j] = Get_element(i, j) + a;
-			_matr[i][j] = matr[i][j] + a;
+			_matr.matr[i][j] = matr[i][j] + a;
 		}
 	}
 	return _matr;
@@ -201,37 +237,145 @@ matrix<T>& matrix<T>::operator+=(int a)
 }
 
 template<typename T>
-matrix<T>& matrix<T>::operator=(matrix<T>& obj)
+matrix<T> matrix<T>::operator-(int a)
 {
-	if (this == &obj) return *this;
-	if (matr != nullptr)
-	{
-		for (int i = 0; i < i_size; i++)
-		{
-			if (matr[i] != nullptr)
-			{
-				delete[] matr[i];
-			}
-		}
-		delete[] matr;
-	}
-	i_size = obj.i_size;
-	j_size = obj.j_size;
-	matr = new T * [i_size];
+	matrix<T> _matr(i_size, j_size);
 	for (int i = 0; i < i_size; i++)
 	{
-		matr[i] = new T[j_size];
 		for (int j = 0; j < j_size; j++)
 		{
-			matr[i][j] = obj.matr[i][j];
+			_matr.matr[i][j] = matr[i][j] - a;
+		}
+	}
+	return _matr;
+}
+
+template<typename T>
+matrix<T>& matrix<T>::operator-=(int a)
+{
+	for (int i = 0; i < i_size; i++)
+	{
+		for (int j = 0; j < j_size; j++)
+		{
+			matr[i][j] -= a;
 		}
 	}
 	return *this;
 }
 
 template<typename T>
+matrix<T> matrix<T>::operator*(int a)
+{
+	matrix<T> _matr(i_size, j_size);
+	for (int i = 0; i < i_size; i++)
+	{
+		for (int j = 0; j < j_size; j++)
+		{
+			_matr.matr[i][j] = matr[i][j] * a;
+		}
+	}
+	return _matr;
+}
+
+template<typename T>
+matrix<T>& matrix<T>::operator*=(int a)
+{
+	for (int i = 0; i < i_size; i++)
+	{
+		for (int j = 0; j < j_size; j++)
+		{
+			matr[i][j] *= a;
+		}
+	}
+	return *this;
+}
+
+template<typename T>
+matrix<T> matrix<T>::operator/(int a)
+{
+	matrix<T> _matr(i_size, j_size);
+	for (int i = 0; i < i_size; i++)
+	{
+		for (int j = 0; j < j_size; j++)
+		{
+			_matr.matr[i][j] = matr[i][j] / a;
+		}
+	}
+	return _matr;
+}
+
+template<typename T>
+matrix<T>& matrix<T>::operator/=(int a)
+{
+	for (int i = 0; i < i_size; i++)
+	{
+		for (int j = 0; j < j_size; j++)
+		{
+			matr[i][j] /= a;
+		}
+	}
+	return *this;
+}
+
+//template<typename T>
+//matrix<T>& matrix<T>::operator=(matrix<T> obj)
+//{
+//	if (this == &obj) return *this;
+//	if (matr != nullptr)
+//	{
+//		for (int i = 0; i < i_size; i++)
+//		{
+//			if (matr[i] != nullptr)
+//			{
+//				delete[] matr[i];
+//			}
+//		}
+//		delete[] matr;
+//	}
+//	i_size = obj.i_size;
+//	j_size = obj.j_size;
+//	matr = new T * [i_size];
+//	for (int i = 0; i < i_size; i++)
+//	{
+//		matr[i] = new T[j_size];
+//	}
+//	for (int i = 0; i < i_size; i++)
+//	{
+//		for (int j = 0; j < j_size; j++)
+//		{
+//			matr[i][j] = obj.matr[i][j];
+//		}
+//	}
+//	return *this;
+//}
+
+template<typename T>
+matrix<T>& matrix<T>::operator=(matrix<T>&& obj)
+{
+	i_size = obj.i_size;
+	j_size = obj.j_size;
+	if (matr != nullptr)
+	{
+		for (int i = 0; i < i_size; i++)
+		{
+			if (matr[i] != nullptr) delete[] matr[i];
+		}
+		delete[] matr;
+	}
+	matr = obj.matr;
+	obj.matr = nullptr;
+	return *this;
+}
+
+template<typename T>
 matrix<T>::~matrix()
 {
-	for (int i = 0; i < i_size; i++) delete[] matr[i];
-	delete[] matr;
+	if (matr != nullptr)
+	{
+		for (int i = 0; i < i_size; i++)
+		{
+			if (matr[i] != nullptr) delete[] matr[i];
+		}
+		delete[] matr;
+	}
 }
