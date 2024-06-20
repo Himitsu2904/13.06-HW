@@ -8,7 +8,8 @@ int main()
 	m1.show();
 	cout << endl << endl;
 
-	matrix<double> m2 = move(m1);
+	matrix<double> m2;
+	m2 = move(m1);
 	m2.show();
 	cout << endl << endl;
 
